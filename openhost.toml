@@ -1,0 +1,29 @@
+[app]
+name = "health-mcp"
+version = "0.1.0"
+description = "Read-only MCP server exposing OpenHost health data to AI agents"
+
+[runtime.container]
+image = "Dockerfile"
+port = 8080
+
+[routing]
+health_check = "/health"
+# /mcp is public at the router level; owner-only access is enforced in-app via
+# the X-OpenHost-Is-Owner header (see src/server/app.py), since a non-browser
+# MCP client can't satisfy the router's default session-cookie gate.
+public_paths = ["/mcp"]
+
+[resources]
+memory_mb = 256
+cpu_cores = 0.2
+
+[data]
+# This app holds no state of its own; it only proxies reads through the
+# health-data service.
+app_data = false
+
+[[services.v2.consumes]]
+service = "github.com/imbue-openhost/health-data-service-spec"
+shortname = "health"
+version = ">=0.1.0"
